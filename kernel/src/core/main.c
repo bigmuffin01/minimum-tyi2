@@ -79,6 +79,17 @@ char readChar(void) {
     return (char) c;
 }
 
+static int isCMD(const char* a, const char* b) {
+    while (*a != '\0' && *b != '\0') {
+        if (*a != *b) {
+            return 0;
+        }
+        a++;
+        b++;
+    }
+    return *a == *b;
+}
+
 void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
     if ((uintptr_t)boot_info != MINEMU_BOOT_INFO_VADDR ||
         boot_info->magic != MINEMU_BOOT_INFO_MAGIC ||
@@ -98,8 +109,68 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
 
     minemu_irq_enable();
     printString("hello world\n");
+
+    char command[21];
+    //printString(command);
+    //printString("\n");
+    int length = 0;
     while (1) {
-        char c = readChar();
-        printChar(c);
+        printString("msh> ");
+
+        while (1) {
+            char c = readChar();
+            if (c == '\n') {
+                break;
+            }
+
+            if (c == 0x08 || c == 0x7f) { // backspace
+                if (length > 0) {
+                    length --;
+                }
+                continue;
+            }
+
+            if (length <20) {
+                command[length++] = c;
+            }
+        }
+
+        command[length] = '\0';
+
+        int cmdStart = 0;
+        while (command[cmdStart] == ' ') {
+            cmdStart++;
+        }
+        if (command[cmdStart] == '\0') {
+            length = 0;
+            continue;
+        }
+        int cmdEnd = cmdStart;
+        while (command[cmdEnd] != ' ' && command[cmdEnd] != '\0') {
+            cmdEnd++;
+        }
+        char* cmd = &command[cmdStart];
+        char* args;
+        if (command[cmdEnd] == '\0') {
+            args = &command[cmdEnd];
+        } else {
+            command[cmdEnd] = '\0';
+            args = &command[cmdEnd + 1];
+            while (*args == ' ') {
+                args++;
+            }
+        }
+
+        // check commands
+        if (isCMD(cmd, "echo")) {
+            printString(args);
+            printChar('\n');
+        } else {
+            printString("command not found: ");
+            printString(cmd);
+            printChar('\n');
+        }
+        command[cmdEnd] = '\0';
+        length = 0;
     }
 }
