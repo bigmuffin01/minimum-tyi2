@@ -118,6 +118,7 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
         printString("msh> ");
 
         int tooLong = 0;
+        int noSpace = 0;
 
         while (1) {
             char c = readChar();
@@ -133,6 +134,11 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
                 }
                 continue;
             }
+
+            if (!noSpace && c == ' ') { // ignore leading spaces
+                continue;
+            }
+            noSpace = 1;
 
             if (length <20) {
                 command[length++] = c;
