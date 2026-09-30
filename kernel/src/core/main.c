@@ -117,6 +117,8 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
     while (1) {
         printString("msh> ");
 
+        int tooLong = 0;
+
         while (1) {
             char c = readChar();
             if (c == '\n') {
@@ -124,7 +126,9 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
             }
 
             if (c == 0x08 || c == 0x7f) { // backspace
-                if (length > 0) {
+                if (tooLong > 0) {
+                    tooLong --;
+                } else if (length > 0) {
                     length --;
                 }
                 continue;
@@ -132,10 +136,18 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
 
             if (length <20) {
                 command[length++] = c;
+            } else {
+                tooLong++;
             }
         }
 
         command[length] = '\0';
+
+        if (tooLong) { // command too long
+            printString("command too long\n");
+            length = 0;
+            continue;
+        }
 
         int cmdStart = 0;
         while (command[cmdStart] == ' ') {
