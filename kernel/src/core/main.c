@@ -1,7 +1,18 @@
 #include "minemu/boot.h"
 #include "minemu/trap.h"
 #include "minemu/trace.h"
+#include "minemu/platform.h"
 
+static void printChar(char c) {// print individual character
+    while ((MINEMU_UART0->status & MINEMU_UART_STATUS_TX_READY) == 0) {}
+    MINEMU_UART0->tx_data = (uint32_t)c;
+}
+static void printString(char* s) { // print a string
+    while (*s != '\0') {
+        printChar(*s);
+        s++;
+    }
+}
 void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
     if ((uintptr_t)boot_info != MINEMU_BOOT_INFO_VADDR ||
         boot_info->magic != MINEMU_BOOT_INFO_MAGIC ||
@@ -15,5 +26,6 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
         minemu_fail_stop();
     }
     minemu_trace_event(1);
+    printString("hello world\n");
     minemu_fail_stop();
 }
