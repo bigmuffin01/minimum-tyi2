@@ -3,8 +3,14 @@
 #include "minemu/trace.h"
 #include "minemu/platform.h"
 #include "minemu/irq.h"
+#include "minemu/syscall.h"
+#include "minemu/user_abi.h"
 
 #define BUFFER_SIZE 128
+#define CPSR_MODE_MASK UINT32_C(0x1f)
+#define CPSR_MODE_USR UINT32_C(0x10)
+#define CPSR_THUMB UINT32_C(0x20)
+#define A32_SVC_ZERO UINT32_C(0xef000000)
 
 static volatile uint32_t interrupt_count;
 
@@ -47,6 +53,44 @@ struct minemu_trap_frame *minemu_irq_dispatch(struct minemu_trap_frame *frame) {
         MINEMU_BLOCK->ack = MINEMU_BLOCK_ACK;
     }
     MINEMU_INTERRUPT->eoi = source;
+    return frame;
+}
+
+struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
+    uint32_t mode = frame->spsr & CPSR_MODE_MASK;
+    if (frame->exception_id != MINEMU_EXCEPTION_SVC || mode != CPSR_MODE_USR ||
+        (frame->spsr & CPSR_THUMB) != 0) {
+        frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+        return frame;
+    }
+
+    uint32_t instruction = *(const uint32_t *)(uintptr_t)frame->fault_pc;
+    if (instruction != A32_SVC_ZERO || frame->r[7] != MINEMU_SYSCALL_IOCTL) {
+        frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+        return frame;
+    }
+
+    //translate ioctl/assignment specs to readable code
+    //fd = frame->r[0];
+    //op = frame->r[1];
+    //syscall number = frame->r[7];
+
+    switch (frame->r[0]) {
+        case MINEMU_RNG_BASE:
+            if (frame->r[1] == 0) {
+                MINEMU_RNG->seed = frame->r[2];
+                frame->r[0] = 0;
+            } else if (frame->r[1] == 1) {
+                //
+            } else {
+                frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+            }
+            break;
+        default:
+            frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+            break;
+    }
+
     return frame;
 }
 
