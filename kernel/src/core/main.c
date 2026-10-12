@@ -8,7 +8,7 @@
 #include "minemu/mmu.h"
 #include <stdbool.h>
 
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 1024
 #define CPSR_MODE_MASK UINT32_C(0x1f)
 #define CPSR_MODE_USR UINT32_C(0x10)
 #define CPSR_THUMB UINT32_C(0x20)
@@ -607,8 +607,7 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
     MINEMU_UART0->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
     MINEMU_UART1->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
     MINEMU_INTERRUPT->enable = (UINT32_C(1) << MINEMU_IRQ_UART0) | (UINT32_C(1) << MINEMU_IRQ_UART1);
-
-minemu_irq_enable();
+    minemu_irq_enable();
 
     static const char module_name[] = "minimum-user";
 

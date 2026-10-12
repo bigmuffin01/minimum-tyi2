@@ -3,7 +3,7 @@
 #include "shell.h"
 #include "minemu/user_abi.h"
 
-#define COMMAND_SIZE 21
+#define COMMAND_SIZE 128
 
 // Adapted mostly from HW1 implementation of msh
 
@@ -44,15 +44,18 @@ void run_msh(void) {
         char command[COMMAND_SIZE];
         uint32_t length = 0;
         int started = 0;
+        uint32_t overlong = 0;
 
         printString("msh> ");
         while (1) {
             char c = readChar();
-            if (c=='\n') { // DOUBLE CHECK (\r?)
+            if (c=='\n') {
                 break;
             }
-            if (c == '\b' || c == 0x7f) {
-                if (length > 0) {
+            if (c == 0x08 || c == 0x7f) {
+                if (overlong > 0) {
+                    overlong--;
+                } else if (length > 0) {
                     length--;
                 }
                 continue;
@@ -62,11 +65,15 @@ void run_msh(void) {
             }
             started = 1;
             if (length < COMMAND_SIZE - 1) {
-                command[length] = c;
-                length++;
+                command[length++] = c;
+            } else {
+                overlong++;
             }
         }
         command[length] = '\0';
+        if (overlong > 0) {
+            continue;
+        }
         char *start = command;
         while (*start == ' ') {
             start++;
