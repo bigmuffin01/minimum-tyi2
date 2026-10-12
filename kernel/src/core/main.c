@@ -77,11 +77,36 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
 
     switch (frame->r[0]) {
         case MINEMU_RNG_BASE:
-            if (frame->r[1] == 0) {
+            if (frame->r[1] == 0) { // rng_set_seed
                 MINEMU_RNG->seed = frame->r[2];
                 frame->r[0] = 0;
-            } else if (frame->r[1] == 1) {
-                //
+            } else if (frame->r[1] == 1) { // rng_get_data
+                // implement rng 1
+            } else {
+                frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+            }
+            break;
+        case MINEMU_UART0_BASE:
+            if (frame->r[1]==0) { // uart_read
+                //implement uart0 0
+            } else if (frame->r[1]==1) { // uart_write
+                // implement uart0 1
+            } else {
+                frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+            }
+            break;
+        case MINEMU_UART1_BASE:
+            if (frame->r[1]==0) { // uart_read
+                //implement uart1 0
+            } else if (frame->r[1]==1) { // uart_write
+                // implement uart1 1
+            } else {
+                frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
+            }
+            break;
+        case MINEMU_TRACE_BASE:
+            if (frame->r[1]==0) { // trace_event
+                // implement trace
             } else {
                 frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
             }
