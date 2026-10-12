@@ -436,6 +436,7 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
                 char *dst = (char *)(uintptr_t)address;
                 int32_t count = 0;
                 while (count < n) {
+                    //bufferWrite(&uart0_buffer, MINEMU_UART0);
                     int c = bufferRead(&uart0_buffer);
                     if (c == -1) {
                         break;
@@ -602,15 +603,12 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
         minemu_trace_event(UINT32_C(0xb007bad0));
         minemu_fail_stop();
     }
-    //minemu_trace_event(1);
 
-    MINEMU_UART0->control |= MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
-    MINEMU_UART1->control |= MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
-    MINEMU_INTERRUPT->enable |= UINT32_C(1) << MINEMU_IRQ_UART0;
-    MINEMU_INTERRUPT->enable |= UINT32_C(1) << MINEMU_IRQ_UART1;
-    minemu_irq_enable();
+    MINEMU_UART0->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
+    //MINEMU_UART1->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
+    MINEMU_INTERRUPT->enable = (UINT32_C(1) << MINEMU_IRQ_UART0) | (UINT32_C(1) << MINEMU_IRQ_UART1);
 
-    //printString("hello world\n");
+minemu_irq_enable();
 
     static const char module_name[] = "minimum-user";
 
