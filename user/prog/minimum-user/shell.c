@@ -67,10 +67,13 @@ void run_msh(void) {
             }
         }
         command[length] = '\0';
-
         char *start = command;
         while (*start == ' ') {
             start++;
+        }
+
+        if (*start == '\0') { // newline for empty argument not taken as bogus argument
+            continue;
         }
 
         char *args = start; // parse args and cmd
@@ -111,7 +114,9 @@ void run_msh(void) {
             }
             printString("\n");
         } else {
-            printString("not echo\n");
+            printString("command not found: ");
+            printString(start);
+            printString("\n");
         }
     }
 }

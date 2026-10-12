@@ -605,7 +605,7 @@ void minemu_kernel_main(const struct minemu_boot_info *boot_info) {
     }
 
     MINEMU_UART0->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
-    //MINEMU_UART1->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
+    MINEMU_UART1->control = MINEMU_UART_CONTROL_RX_IRQ_ENABLE;
     MINEMU_INTERRUPT->enable = (UINT32_C(1) << MINEMU_IRQ_UART0) | (UINT32_C(1) << MINEMU_IRQ_UART1);
 
 minemu_irq_enable();
