@@ -398,31 +398,24 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
             if (frame->r[1] == MINEMU_IOCTL_RNG_SEED) {
                 MINEMU_RNG->seed = frame->r[2];
                 frame->r[0] = 0;
-
             } else if (frame->r[1] == MINEMU_IOCTL_RNG_NEXT) {
                 uint32_t address = frame->r[2];
-
                 if (!validate_user_range(address, sizeof(uint32_t), 1)) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 uint32_t *data = (uint32_t *)(uintptr_t)address;
                 *data = MINEMU_RNG->data;
                 frame->r[0] = 0;
-
             } else if (frame->r[1] == MINEMU_IOCTL_RNG_STATE) {
                 uint32_t address = frame->r[2];
-
                 if (!validate_user_range(address, sizeof(uint32_t), 1)) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 uint32_t *data = (uint32_t *)(uintptr_t)address;
                 *data = MINEMU_RNG->state;
                 frame->r[0] = 0;
-
             } else {
                 frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
             }
@@ -432,33 +425,25 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
             if (frame->r[1] == MINEMU_IOCTL_UART_READ) {
                 uint32_t address = frame->r[2];
                 int32_t n = (int32_t)frame->r[3];
-
                 if (n < 0) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 if (!validate_user_range(address, (uint32_t)n, 1)) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 char *dst = (char *)(uintptr_t)address;
                 int32_t count = 0;
-
                 while (count < n) {
                     int c = bufferRead(&uart0_buffer);
-
                     if (c == -1) {
                         break;
                     }
-
                     dst[count] = (char)c;
                     count++;
                 }
-
                 frame->r[0] = (uint32_t)count;
-
             } else {
                 frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
             }
@@ -468,20 +453,16 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
             if (frame->r[1] == MINEMU_IOCTL_UART_WRITE) {
                 uint32_t address = frame->r[2];
                 int32_t n = (int32_t)frame->r[3];
-
                 if (n < 0) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 if (!validate_user_range(address, (uint32_t)n, 0)) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 const char *src = (const char *)(uintptr_t)address;
                 int32_t count = 0;
-
                 while (count < n) {
                     while ((MINEMU_UART0->status &
                             MINEMU_UART_STATUS_TX_READY) == 0) {
@@ -492,54 +473,42 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
 
                     count++;
                 }
-
                 frame->r[0] = (uint32_t)count;
-
             } else {
                 frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
             }
             break;
-
         case MINEMU_FD_UART_DIAG:
             if (frame->r[1] == MINEMU_IOCTL_UART_READ) {
                 uint32_t address = frame->r[2];
                 int32_t n = (int32_t)frame->r[3];
-
                 if (n < 0) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 if (!validate_user_range(address, (uint32_t)n, 1)) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 char *dst = (char *)(uintptr_t)address;
                 int32_t count = 0;
-
                 while (count < n) {
                     int c = bufferRead(&uart1_buffer);
 
                     if (c == -1) {
                         break;
                     }
-
                     dst[count] = (char)c;
                     count++;
                 }
-
                 frame->r[0] = (uint32_t)count;
-
             } else if (frame->r[1] == MINEMU_IOCTL_UART_WRITE) {
                 uint32_t address = frame->r[2];
                 int32_t n = (int32_t)frame->r[3];
-
                 if (n < 0) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
                 }
-
                 if (!validate_user_range(address, (uint32_t)n, 0)) {
                     frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
                     break;
@@ -558,14 +527,11 @@ struct minemu_trap_frame *minemu_svc_dispatch(struct minemu_trap_frame *frame) {
 
                     count++;
                 }
-
                 frame->r[0] = (uint32_t)count;
-
             } else {
                 frame->r[0] = (uint32_t)MINEMU_IOCTL_ERROR;
             }
             break;
-
         case MINEMU_FD_TRACE:
             if (frame->r[1] == MINEMU_IOCTL_TRACE_EVENT) {
                 MINEMU_TRACE->event = frame->r[2];
